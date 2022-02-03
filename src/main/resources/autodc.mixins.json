@@ -3,8 +3,8 @@
   "minVersion": "0.8",
   "package": "me.bcheng.autodc.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "ExampleMixin"
+  "client": [
+    "ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
