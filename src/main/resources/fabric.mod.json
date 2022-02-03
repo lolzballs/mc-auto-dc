@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "autodc",
+  "version": "${version}",
+
+  "name": "Auto DC",
+  "description": "AFK Without Dying",
+  "authors": [
+    "Benjamin Cheng <ben@bcheng.me>"
+  ],
+
+  "license": "GPLv3",
+  "icon": "assets/modid/icon.png",
+
+  "contact": {
+    "sources": "https://github.com/lolzballs/mc-auto-dc",
+    "issues": "https://github.com/lolzballs/mc-auto-dc/issues"
+  },
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "me.bcheng.autodc.AutoDcMod"
+    ]
+  },
+  "mixins": [
+    {
+      "environment": "client",
+      "config": "autodc.mixins.json"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.12.12",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
