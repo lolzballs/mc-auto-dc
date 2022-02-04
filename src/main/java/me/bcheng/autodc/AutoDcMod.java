@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AutoDcMod implements ClientModInitializer {
-	public static final Logger LOGGER = LoggerFactory.getLogger("autodc");
+    public static final Logger LOGGER = LoggerFactory.getLogger("autodc");
 
-	@Override
-	public void onInitializeClient() {
-		LOGGER.info("Hello Fabric world!");
-		AutoDcEventCallback.EVENT.register(reason -> {
-			LOGGER.info("DcEvent reason {}", reason);
-		});
-	}
+    @Override
+    public void onInitializeClient() {
+        LOGGER.info("Hello Fabric world!");
+        AutoDcEventCallback.EVENT.register(reason -> {
+            LOGGER.info("DcEvent reason {}", reason);
+        });
+    }
 }
