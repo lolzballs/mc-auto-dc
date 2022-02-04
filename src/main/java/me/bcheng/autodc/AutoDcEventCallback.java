@@ -11,5 +11,5 @@ public interface AutoDcEventCallback {
                 }
             });
 
-    void handle(String reason);
+    void handle(AutoDcEventSource reason);
 }
