@@ -35,7 +35,7 @@ public class AutoDcMod implements ClientModInitializer {
         var client = MinecraftClient.getInstance();
 
         // Don't render if debug menu (F3) is open, or if AFK protection is off
-        if (this.afk || client.options.debugEnabled)
+        if (!this.afk || client.options.debugEnabled)
             return;
 
         var textRenderer = client.textRenderer;
