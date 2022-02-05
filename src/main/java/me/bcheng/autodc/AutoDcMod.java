@@ -1,17 +1,20 @@
 package me.bcheng.autodc;
 
+import me.bcheng.autodc.mixin.MinecraftClientMixin;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.GameMenuScreen;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,15 +23,45 @@ public class AutoDcMod implements ClientModInitializer {
 
     private final Text hudText = new LiteralText("AFK Protection On");
     private ClickableWidget afkButton;
-    private boolean afk;
+    private boolean afk = false;
+    private AutoDcEventSource disconnectReason = null;
 
     @Override
     public void onInitializeClient() {
         this.afkButton = createAfkButton();
 
         AutoDcEventCallback.EVENT.register(this::onDcEvent);
+        MinecraftClientRenderEvent.EVENT.register(this::disconnect);
         ScreenEvents.AFTER_INIT.register(this::afterScreenInit);
         HudRenderCallback.EVENT.register(this::renderHudOverlay);
+    }
+
+    private void disconnect() {
+        if (this.disconnectReason == null)
+            return;
+
+        var client = MinecraftClient.getInstance();
+        if (client.world == null)
+            return;
+
+        Screen returnScreen = new TitleScreen();
+        boolean sp = client.isInSingleplayer();
+        boolean connectedToRealms = client.isConnectedToRealms();
+        client.world.disconnect();
+        if (sp) {
+            client.disconnect(new SaveLevelScreen(new TranslatableText("menu.savingLevel")));
+        } else {
+            client.disconnect();
+        }
+        if (connectedToRealms) {
+            returnScreen = new RealmsMainScreen(returnScreen);
+        } else if (!sp) {
+            returnScreen = new MultiplayerScreen(returnScreen);
+        }
+
+        client.setScreen(new AutoDcDisconnectedScreen(returnScreen, this.disconnectReason));
+
+        this.disconnectReason = null;
     }
 
     private void renderHudOverlay(MatrixStack matrixStack, float tickDelta) {
@@ -45,7 +78,7 @@ public class AutoDcMod implements ClientModInitializer {
     private void onDcEvent(AutoDcEventSource reason) {
         if (this.afk) {
             LOGGER.info("DcEvent reason {}", reason);
-            // TODO: disconnect player here
+            this.disconnectReason = reason;
         }
     }
 
