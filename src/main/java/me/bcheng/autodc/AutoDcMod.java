@@ -1,7 +1,7 @@
 package me.bcheng.autodc;
 
-import me.bcheng.autodc.mixin.MinecraftClientMixin;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
@@ -30,17 +30,16 @@ public class AutoDcMod implements ClientModInitializer {
     public void onInitializeClient() {
         this.afkButton = createAfkButton();
 
+        ClientTickEvents.START_CLIENT_TICK.register(this::disconnect);
         AutoDcEventCallback.EVENT.register(this::onDcEvent);
-        MinecraftClientRenderEvent.EVENT.register(this::disconnect);
         ScreenEvents.AFTER_INIT.register(this::afterScreenInit);
         HudRenderCallback.EVENT.register(this::renderHudOverlay);
     }
 
-    private void disconnect() {
+    private void disconnect(MinecraftClient client) {
         if (this.disconnectReason == null)
             return;
 
-        var client = MinecraftClient.getInstance();
         if (client.world == null)
             return;
 
