@@ -2,14 +2,16 @@ package me.bcheng.autodc;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -22,7 +24,7 @@ public class AutoDcMod implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("autodc");
 
     private final Text hudText = new LiteralText("AFK Protection On");
-    private ClickableWidget afkButton;
+    private CyclingButtonWidget<Boolean> afkButton;
     private boolean afk = false;
     private AutoDcEventSource disconnectReason = null;
 
@@ -34,6 +36,14 @@ public class AutoDcMod implements ClientModInitializer {
         AutoDcEventCallback.EVENT.register(this::onDcEvent);
         ScreenEvents.AFTER_INIT.register(this::afterScreenInit);
         HudRenderCallback.EVENT.register(this::renderHudOverlay);
+        ClientPlayConnectionEvents.JOIN.register(this::onClientJoin);
+    }
+
+    private void onClientJoin(ClientPlayNetworkHandler handler, PacketSender packetSender, MinecraftClient client) {
+        // reset afk state
+        this.afkButton.setValue(false);
+        this.afk = false;
+        this.disconnectReason = null;
     }
 
     private void disconnect(MinecraftClient client) {
@@ -87,7 +97,7 @@ public class AutoDcMod implements ClientModInitializer {
         }
     }
 
-    private ClickableWidget createAfkButton() {
+    private CyclingButtonWidget<Boolean> createAfkButton() {
         return CyclingButtonWidget.onOffBuilder(new LiteralText("On"), new LiteralText("Off"))
                 .initially(false)
                 .build(0, 0, 150, 20,
